@@ -527,7 +527,7 @@ def create_data_processing_tab(current_project_path):
                             output = gr.Textbox(
                                 label="处理结果",
                                 lines=20,
-                                show_copy_button=True
+                                # show_copy_button=True
                             )
             
             with gr.TabItem("数据可视化"):

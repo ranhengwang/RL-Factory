@@ -9,22 +9,34 @@ class SearchEnv(Env):
     def __init__(self, config, centralized_actor=None):
         super().__init__(config, centralized_actor)
         self.use_verify_tool = False
-
+    # 计算每一步（Step）的中间奖励，主要针对工具调用的格式和正确性
     def get_step_reward(self, responses, format_score=0.1):
+        """
+        get_step_reward 的 Docstring
+        
+        :param self: 说明
+        :param responses: 说明
+        :param format_score: 格式分权重
+        """
         step_reward = []
     
         for response in responses:
+            # 使用 self.tool_manager.parse_response 解析回复，提取动作类型和工具列表
             temp_action, temp_tool_list = self.tool_manager.parse_response(response_content=response)
+            # 直接回答意味着这一步没有工具调用奖励，或者奖励将在最终结算时给出
             if temp_action == 'answer':
                 step_reward.append(torch.nan)
             else:
+                # 空工具调用 (<empty>): 给予惩罚 -0.5 * format_score
                 if temp_tool_list[0]['name'] == '<empty>':
                     step_reward.append(-0.5 * format_score)
                 else:
                     fail_number = 0
+                    # 统计解析失败的工具调用数量 (fail_number，即名字为 <error> 的工具调用)
                     for i in range(len(temp_tool_list )):
                         if temp_tool_list[i]['name'] == '<error>':
                             fail_number += 1
+                    # 解析成功的工具越多，奖励越高；解析失败（格式错误）的工具会严重扣分
                     step_rew = ((len(temp_tool_list) - 2 *fail_number) / len(temp_tool_list)) * format_score
                     step_reward.append(step_rew)
        
@@ -33,6 +45,7 @@ class SearchEnv(Env):
 
     # NOTE: Add your reward calculation rules here!
     def _compute_score_with_rules(self, data, tokenizer, if_val=False):
+        # 标准化答案字符串（去冠词、去标点、转小写、规范化空格），用于后续的精确匹配
         def normalize_answer(s):
             def remove_articles(text):
                 return re.sub(r"\b(a|an|the)\b", " ", text)
@@ -49,6 +62,7 @@ class SearchEnv(Env):
 
             return white_space_fix(remove_articles(remove_punc(lower(s))))
 
+        # 精确匹配（Exact Match）检查。判断预测答案是否在标准答案列表中。
         def em_check(prediction, golden_answers):
             if isinstance(golden_answers, str):
                 golden_answers = [golden_answers]
@@ -61,6 +75,10 @@ class SearchEnv(Env):
                     break
             return score
 
+        # 从模型回复中提取最终答案。
+        # 它会移除 <think>...</think> 标签内的思考过程。
+        # 寻找 <answer>...</answer> 标签包裹的内容。
+        # 如果找到多个，取最后一个。如果没有找到，返回 None
         def extract_solution(solution_str):
             """Extract the equation from the solution string."""
             # Remove everything before the first "Assistant:"
@@ -87,7 +105,8 @@ class SearchEnv(Env):
             return matches[-1].group(1).strip()
 
         def compute_score_em(solution_str, ground_truth, method='strict', format_score=0.0, score=1.):
-            """The scoring function for exact match (EM).
+            """reward为格式分，加上最终答案的分数
+            The scoring function for exact match (EM).
 
             Args:
                 solution_str: the solution text
@@ -162,6 +181,7 @@ class SearchEnv(Env):
         #     # 最终栈必须为空，才是严格交替
         #     return len(stack) == 0
 
+        # 检查标签是否成对且无嵌套（例如 <tool_call> 和 </tool_call> 是否严格交替出现）。这是为了强制模型输出规范的 XML 格式。
         def check_alternate_tags(text, tag_pattern):
             # 用正则提取标签名
             match = re.match(r"<\/?(\w+)>", re.findall(tag_pattern, text)[0]) if re.findall(tag_pattern, text) else None

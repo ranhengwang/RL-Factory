@@ -4,7 +4,8 @@
 # for reinforcement learning agents with tool-calling capabilities.
 
 set -e -x
-
+export VERL_LOGGING_LEVEL=DEBUG
+export CUDA_VISIBLE_DEVICES=0,1  # 确保这里列出的 GPU 是可用的
 # --- 新增：禁用 Torch 编译以避免 BackendCompilerFailed 错误 ---
 export TORCH_COMPILE_DISABLE=1
 export TORCH_DYNAMO_DISABLE=1
@@ -22,21 +23,22 @@ unset ROCR_VISIBLE_DEVICES
 export MODEL_PATH=${MODEL_PATH:-/home/ranhengwang/.cache/modelscope/hub/models/Qwen/Qwen3-4B}
 # export MODEL_PATH=/home/ranhengwang/models/Qwen2.5-0.5B-Instruct
 # reward_rollout.if_use_reward_rollout=False从这行代码明确告诉系统：不要使用这个独立的奖励模型进行 Rollout 或打分
-export REWARD_MODEL_PATH=/home/ranhengwang/.cache/modelscope/hub/models/Qwen/Qwen3-8B
+# export REWARD_MODEL_PATH=/home/ranhengwang/.cache/modelscope/hub/models/Qwen/Qwen3-8B
+export REWARD_MODEL_PATH=/home/ranhengwang/models/Qwen2.5-0.5B-Instruct
 # export RESULT_DIR=/home/ranhengwang/ndsl-project/RL-Factory/output
-export RESULT_DIR=${RESULT_DIR:-/home/ranhengwang/ndsl-project/RL-Factory/output}
+export RESULT_DIR=${RESULT_DIR:-/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel/output}
 python3 -m verl.trainer.main_ppo --config-name=rl_factory_ppo_trainer \
     algorithm.adv_estimator=grpo\
-    data.train_files=data/nq_search/train.parquet\
-    data.val_files=data/nq_search/test.parquet\
-    data.train_batch_size=128\
+    data.train_files=/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel/data/travel_train.parquet\
+    data.val_files=/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel/data/travel_train.parquet\
+    data.train_batch_size=16\
     data.max_prompt_length=4096\
     data.max_response_length=512\
     actor_rollout_ref.model.path=$MODEL_PATH\
     actor_rollout_ref.model.use_remove_padding=True\
     actor_rollout_ref.model.enable_gradient_checkpointing=True\
     actor_rollout_ref.actor.optim.lr=1e-6\
-    actor_rollout_ref.actor.ppo_mini_batch_size=16\
+    actor_rollout_ref.actor.ppo_mini_batch_size=8\
     actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=2\
     actor_rollout_ref.actor.use_kl_loss=True\
     actor_rollout_ref.actor.kl_loss_coef=0.001\
@@ -56,12 +58,12 @@ python3 -m verl.trainer.main_ppo --config-name=rl_factory_ppo_trainer \
     actor_rollout_ref.ref.fsdp_config.param_offload=True\
     actor_rollout_ref.rollout.enforce_eager=False\
     actor_rollout_ref.rollout.free_cache_engine=True\
-    actor_rollout_ref.env.name=search\
+    actor_rollout_ref.env.name=travel\
     actor_rollout_ref.env.mcp_mode=stdio\
     actor_rollout_ref.env.tool_manager=qwen3\
     actor_rollout_ref.env.enable_thinking=False\
-    actor_rollout_ref.env.config_path=envs/configs/mcp_tools.pydata\
-    actor_rollout_ref.env.use_process_reward=False\
+    actor_rollout_ref.env.config_path=/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel/envs/configs/travel-planner.pydata\
+    actor_rollout_ref.env.use_process_reward=True\
     reward_rollout.if_use_reward_rollout=False\
     reward_rollout.rollout.tensor_model_parallel_size=4\
     reward_rollout.rollout.gpu_memory_utilization=0.6\
@@ -72,8 +74,8 @@ python3 -m verl.trainer.main_ppo --config-name=rl_factory_ppo_trainer \
     algorithm.kl_ctrl.kl_coef=0.001\
     trainer.critic_warmup=0\
     trainer.logger=['tensorboard']\
-    trainer.project_name='GRPO_search'\
-    trainer.experiment_name='search_with_thinking'\
+    trainer.project_name='GRPO_travel'\
+    trainer.experiment_name='travel_with_thinking'\
     trainer.n_gpus_per_node=2\
     trainer.nnodes=1\
     trainer.val_before_train=False\

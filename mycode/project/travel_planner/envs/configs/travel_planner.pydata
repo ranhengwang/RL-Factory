@@ -1,0 +1,24 @@
+[
+    {
+        "mcpServers": {
+            "get_weather": {
+                "command": "python3",
+                "args": [
+                    "/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel_planner/envs/tools/get_weather.py"
+                ]
+            },
+            "search_flights": {
+                "command": "python3",
+                "args": [
+                    "/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel_planner/envs/tools/search_flights.py"
+                ]
+            },
+            "book_hotel": {
+                "command": "python3",
+                "args": [
+                    "/home/ranhengwang/ndsl-project/RL-Factory/mycode/project/travel_planner/envs/tools/book_hotel.py"
+                ]
+            }
+        }
+    }
+]

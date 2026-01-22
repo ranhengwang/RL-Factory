@@ -7,6 +7,15 @@ tensorflow/my_graph/*
 .idea/
 # C extensions
 *.so
+data/
+model/
+output/
+train/model/
+train/agent/
+train/mcp/
+train/projects/
+view_cloud/
+
 
 # Distribution / packaging
 .Python

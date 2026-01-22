@@ -1,0 +1,4 @@
+starlette
+mcp
+uvicorn
+pydantic

@@ -1,0 +1,153 @@
+{
+  "server_info": {
+    "toolName": "FastMCP API Server",
+    "description": "一个支持动态端口和工具定义的 FastMCP 服务器，支持参数传递",
+    "version": "1.0.0",
+    "protocol": "streamable-http",
+    "default_port": "从 mcp.json 配置文件中读取",
+    "json_response_enabled": true
+  },
+  "tools": [
+    {
+      "name": "api.status",
+      "description": "检查 API 服务器是否运行",
+      "parameters": [],
+      "returns": "服务器运行状态字符串"
+    },
+    {
+      "name": "math.calculate",
+      "description": "执行数学计算，支持表达式评估",
+      "parameters": [
+        {
+          "name": "expression",
+          "type": "字符串",
+          "required": true,
+          "description": "要计算的数学表达式"
+        },
+        {
+          "name": "precision",
+          "type": "整数",
+          "default": 2,
+          "required": false,
+          "description": "结果精度"
+        }
+      ],
+      "returns": "计算结果、表达式和时间戳"
+    },
+    {
+      "name": "file.operation",
+      "description": "执行文件操作，如读取、写入、列出目录",
+      "parameters": [
+        {
+          "name": "operation",
+          "type": "字符串",
+          "required": true,
+          "enum": ["read", "write", "list", "size"],
+          "description": "操作类型"
+        },
+        {
+          "name": "path",
+          "type": "字符串",
+          "required": true,
+          "description": "文件或目录路径"
+        },
+        {
+          "name": "content",
+          "type": "字符串",
+          "required": false,
+          "default": "",
+          "description": "写入内容"
+        }
+      ],
+      "returns": "根据操作类型返回相应结果"
+    },
+    {
+      "name": "system.info",
+      "description": "获取系统信息，如操作系统、CPU、内存、磁盘使用情况",
+      "parameters": [
+        {
+          "name": "info_type",
+          "type": "字符串",
+          "required": true,
+          "enum": ["os", "cpu", "memory", "disk", "network"],
+          "description": "信息类型"
+        }
+      ],
+      "returns": "根据请求的信息类型返回系统数据"
+    },
+    {
+      "name": "http.request",
+      "description": "向外部服务发起 HTTP 请求",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "字符串",
+          "required": true,
+          "enum": ["GET", "POST", "PUT", "DELETE"],
+          "description": "HTTP 方法"
+        },
+        {
+          "name": "url",
+          "type": "字符串",
+          "required": true,
+          "description": "请求 URL"
+        },
+        {
+          "name": "headers",
+          "type": "对象",
+          "required": false,
+          "default": {},
+          "description": "请求头"
+        },
+        {
+          "name": "data",
+          "type": "对象",
+          "required": false,
+          "default": {},
+          "description": "请求数据"
+        }
+      ],
+      "returns": "响应状态码、头、正文和 URL"
+    },
+    {
+      "name": "weather.query",
+      "description": "查询城市天气信息（模拟数据）",
+      "parameters": [
+        {
+          "name": "city",
+          "type": "字符串",
+          "required": true,
+          "description": "城市名称"
+        },
+        {
+          "name": "unit",
+          "type": "字符串",
+          "default": "metric",
+          "enum": ["metric", "imperial"],
+          "required": false,
+          "description": "温度单位"
+        }
+      ],
+      "returns": "温度、湿度、天气状况等模拟数据"
+    }
+  ],
+  "server_config": {
+    "startup_options": "支持命令行参数 --port 指定端口",
+    "port_detection": "自动检测端口可用性，若指定端口不可用则回退",
+    "error_handling": "包含端口不可用和服务器启动失败的错误处理",
+    "dependencies": [
+      "requests (HTTP 请求)",
+      "psutil (系统信息，可选)",
+      "pydantic (参数验证)",
+      "mcp.server.fastmcp (MCP 服务器框架)"
+    ]
+  },
+  "startup_flow": [
+    "读取 mcp.json 配置文件",
+    "解析命令行参数",
+    "检测端口可用性",
+    "创建 FastMCP 实例",
+    "注册所有工具",
+    "启动服务器（使用 streamable-http 协议）"
+  ]
+}

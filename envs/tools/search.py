@@ -31,7 +31,8 @@ def query_rag(query: str, topk: int = 3):
             "https": None
         }
         
-        response = requests.post(
+        response = requests.post(-
+        
             "http://127.0.0.1:5003/retrieve",
             json=request_data,
             headers=headers,

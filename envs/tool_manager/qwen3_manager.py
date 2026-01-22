@@ -22,6 +22,7 @@ def parse_mcp_tools_config(file_path):
         with open(file_path, 'r') as f:
             content = f.read()
         # 使用 literal_eval 安全地解析 Python 字面量
+        # 将包含 Python 字面量表达式的字符串安全地转换为对应的 Python 对象。
         data = literal_eval(content)
         return data
     except Exception as e:

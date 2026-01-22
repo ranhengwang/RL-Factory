@@ -6,7 +6,7 @@ from .qwen2_5_vl_manager import Qwen25VLManager
 from .centralized.centralized_qwen3_manager import CentralizedQwenManager
 
 
-
+# 控制 from module import * 的行为 - 定义哪些名称会被导入
 __all__ = ['ConfigManager', 'QwenManager', 'Qwen25Manager','Qwen25VLManager', 'Llama3Manager', 'CentralizedQwenManager']
 
 TOOL_MANAGER_REGISTRY = {

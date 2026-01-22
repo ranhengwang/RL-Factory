@@ -1,0 +1,18 @@
+[
+    {
+        "mcpServers": {
+            "get_graph_spec": {
+                "command": "python3",
+                "args": [
+                    "envs/tools/get_graph_spec.py"
+                ]
+            },
+            "export_graph_to_document": {
+                "command": "python3",
+                "args": [
+                    "envs/tools/export_graph_to_document.py"
+                ]
+            }
+        }
+    }
+]

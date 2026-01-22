@@ -155,3 +155,47 @@ If you have contributed to this project and wish to be included in our technical
 
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=Simple-Efficient/RL-Factory&type=Date)](https://www.star-history.com/#Simple-Efficient/RL-Factory&Date)  
+
+
+## cuda导入
+export CUDA_HOME=/usr/local/cuda-12.4
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+
+## 杀掉进程
+kill -9 $(lsof -t -i:5003)
+kill -9 $(lsof -t -i:8000)
+
+## 查看显卡
+squeue -l
+scontrol show jobs
+## 申请显卡
+srun --ntasks=1 --cpus-per-task=32 --mem=300G --partition=gpu7 --gpus=a800:2 --pty bash
+srun --ntasks=1 --cpus-per-task=32 --mem=100G --partition=gpu8 --gpus=4090:4 --pty bash
+
+srun --ntasks=1 --cpus-per-task=32 --mem=100G --partition=gpu7 --gpus=a800:1 --pty bash
+
+srun --ntasks=1 --cpus-per-task=32 --mem=50G --partition=gpu8 --gpus=4090:1 --pty bash
+## 运行rag server
+bash rag_server/launch.sh
+
+## 开始训练
+bash main_grpo.sh
+
+## 启动tensorboard
+tensorboard --logdir=./
+
+## 查看当前目录下所有文件的大小
+du -sh *
+
+## 训练完成后，合并切片
+python3 scripts/model_merger.py merge \
+    --backend fsdp \
+    --local_dir /home/ranhengwang/ndsl-project/RL-Factory/output/global_step_618/actor \
+    --target_dir /home/ranhengwang/ndsl-project/RL-Factory/output/merged_model \
+    --hf_model_path /home/ranhengwang/ndsl-project/RL-Factory/output/global_step_618/actor/huggingface
+    <!-- hf_model_path 要拿来指定config.json文件所在位置 -->
+
+# 1. 停止现有进程
+pkill -f "http.server 8000"
+pkill -f "uvicorn backend.app"
